@@ -1,4 +1,5 @@
 import { ICatalogRepository } from "../interface/catalogRepository.interface";
+import { Product } from "../models/products.model";
 
 export class CatalogService {
   private _repo: ICatalogRepository;
@@ -7,12 +8,36 @@ export class CatalogService {
     this._repo = repo;
   }
 
-  createProduct(input: any) {}
+  async createProduct(input: Product) {
+    if (input.name == "") {
+      throw new Error("Product name must not be blank");
+    }
+    const data = await this._repo.create(input);
+    return data;
+  }
 
-  updateProduct(input: any) {}
+  async updateProduct(input: Product) {
+    if (!input.id) {
+      throw new Error("To update product, id is required");
+    }
+    // TODO: replace empty name field with current product fields
+    // todo after getProduct is implemented
 
-  getProducts(limit: number, offset: number) {}
+    const data = await this._repo.update(input);
+    return data;
+  }
 
-  getProduct(id: number) {}
-  deleteProduct(id: number) {}
+  async getProducts(limit: number, offset: number) {
+    const data = await this._repo.find(limit, offset);
+    return data;
+  }
+
+  async getProduct(id: number) {
+    const data = await this._repo.findOne(id);
+    return data;
+  }
+  async deleteProduct(id: number) {
+    const data = await this._repo.delete(id);
+    return data;
+  }
 }
