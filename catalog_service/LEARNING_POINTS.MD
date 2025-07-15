@@ -35,4 +35,22 @@
 
   - but you gotta do npm init always
 
+### javascript/typescript testing
+- jest
+  - good for cjs
+  - has been around for quite long
+    - many supporting packages
+  - a bit slower
 
+- vitest
+  - good for esm
+  - faster
+
+
+- instead of full DI, tendency is to mock via Jest's mock/spyOn methods
+  + no need to keep switching tabs
+  + although we still need DI structure, but the mock instantiation is just a shell and has not much code
+  + most of the logic is established in your unit test
+
+  - hard to understand/read
+  - over abstraction, things break much more easily if code we are testing against changes
