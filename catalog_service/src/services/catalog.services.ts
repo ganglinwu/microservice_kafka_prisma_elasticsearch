@@ -1,5 +1,6 @@
 import { ICatalogRepository } from "../interface/catalogRepository.interface";
 import { Product } from "../models/products.model";
+import swapOutBlankFields from "../utils/swapOutBlankFields.utils";
 
 export class CatalogService {
   private _repo: ICatalogRepository;
@@ -20,10 +21,11 @@ export class CatalogService {
     if (!input.id) {
       throw new Error("To update product, id is required");
     }
-    // TODO: replace empty name field with current product fields
-    // todo after getProduct is implemented
+    const currentProduct = await this._repo.findOne(input.id);
 
-    const data = await this._repo.update(input);
+    const productToUpdate = swapOutBlankFields(input, currentProduct);
+
+    const data = await this._repo.update(productToUpdate);
     return data;
   }
 
