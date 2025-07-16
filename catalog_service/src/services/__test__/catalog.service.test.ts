@@ -112,7 +112,7 @@ describe("catalogService", () => {
       };
 
       await expect(service.updateProduct(product1000)).rejects.toThrow(
-        "Did not find matching product with specified id",
+        "No product with id specified",
       );
     });
 
@@ -273,22 +273,6 @@ describe("catalogService", () => {
       await expect(service.getProduct(0)).rejects.toThrow(
         "No product with id specified",
       );
-    });
-
-    test("should throw error for id not in range", async () => {
-      const service = new CatalogService(repo);
-
-      const product1 = mockProduct();
-      const product2 = mockProduct();
-      const product3 = mockProduct();
-      const product4 = mockProduct();
-
-      const insertedProduct1 = await service.createProduct(product1);
-      const insertedProduct2 = await service.createProduct(product2);
-      const insertedProduct3 = await service.createProduct(product3);
-      const insertedProduct4 = await service.createProduct(product4);
-
-      await expect(service.getProduct(10)).rejects.toThrow("Id out of range");
     });
   });
 

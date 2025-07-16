@@ -30,7 +30,7 @@ export class MockCatalogRepository implements ICatalogRepository {
         return Promise.resolve(data);
       }
     }
-    throw new Error("Did not find matching product with specified id");
+    throw new Error("No product with id specified");
   }
 
   delete(id: number): Promise<number> {
@@ -70,8 +70,6 @@ export class MockCatalogRepository implements ICatalogRepository {
   findOne(id: number): Promise<Product> {
     if (id <= 0) {
       throw new Error("No product with id specified");
-    } else if (id > this._products.length) {
-      throw new Error("Id out of range");
     }
     for (let i = 0; i < this._products.length; i++) {
       if (this._products[i].id === id) {
