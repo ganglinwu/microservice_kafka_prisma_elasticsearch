@@ -1,13 +1,11 @@
 import { ICatalogRepository } from "../interface/catalogRepository.interface";
 import { Product } from "../models/products.model";
+import { v7 as uuidv7 } from "uuid";
 
 export class MockCatalogRepository implements ICatalogRepository {
   private _products: Product[];
-  private _next_id: number;
-
   constructor() {
     this._products = [];
-    this._next_id = 1;
   }
   create(data: Product): Promise<Product> {
     for (const product of this._products) {
@@ -16,8 +14,7 @@ export class MockCatalogRepository implements ICatalogRepository {
       }
     }
     let insertedData: Product;
-    insertedData = { id: this._next_id, ...data };
-    this._next_id++;
+    insertedData = { id: uuidv7(), ...data };
     this._products.push(insertedData);
     return Promise.resolve(insertedData);
   }
@@ -33,7 +30,7 @@ export class MockCatalogRepository implements ICatalogRepository {
     throw new Error("No product with id specified");
   }
 
-  delete(id: number): Promise<number> {
+  delete(id: string): Promise<string> {
     for (let i = 0; i < this._products.length; i++) {
       if (this._products[i].id === id) {
         this._products.splice(i, 1);
@@ -67,10 +64,7 @@ export class MockCatalogRepository implements ICatalogRepository {
       }
     }
   }
-  findOne(id: number): Promise<Product> {
-    if (id <= 0) {
-      throw new Error("No product with id specified");
-    }
+  findOne(id: string): Promise<Product> {
     for (let i = 0; i < this._products.length; i++) {
       if (this._products[i].id === id) {
         return Promise.resolve(this._products[i]);
