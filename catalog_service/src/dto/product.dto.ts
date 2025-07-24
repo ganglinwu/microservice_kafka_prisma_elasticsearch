@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, Min } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, Min, IsUUID } from "class-validator";
 
 // without the assertion(!) ts will complain that the fields will potentially be undefined
 //
@@ -37,15 +37,13 @@ export class GetProductsRequest {
 }
 
 export class GetProductID {
-  @IsNumber()
-  @Min(1)
-  id!: number;
+  @IsUUID()
+  id!: string;
 }
 
 export class PatchProductRequest {
-  @IsNumber()
-  @Min(1)
-  id!: number;
+  @IsUUID()
+  id!: string;
 
   @IsString()
   @IsNotEmpty()
@@ -63,7 +61,6 @@ export class PatchProductRequest {
   stock!: number;
 }
 export class DeleteProductID {
-  @IsNumber()
-  @Min(1)
-  id!: number;
+  @IsUUID()
+  id!: string;
 }
