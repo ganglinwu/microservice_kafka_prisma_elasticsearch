@@ -2,6 +2,11 @@ import expressApp from "./expressApp";
 
 const PORT = process.env.PORT || 3000;
 
+// TODO: implement repo connection
+// line below causes circular dependency
+//
+// export const repo = new CatalogRepository();
+
 export const StartServer = async () => {
   expressApp.listen(PORT, () => {
     console.log("Listening on: ", PORT);
