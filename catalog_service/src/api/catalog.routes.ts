@@ -67,7 +67,7 @@ catalogRouter.get(
   "/product/:id",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Number(req.params["id"]);
+      const id = req.params["id"] as string;
 
       const classWithID = {
         id: id,
@@ -95,7 +95,7 @@ catalogRouter.patch(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const productToUpdate = {
-        id: Number(req.params["id"]),
+        id: req.params["id"] as string,
         ...req.body,
       };
 
@@ -120,7 +120,7 @@ catalogRouter.delete(
   "/product/:id",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const id = Number(req.params["id"]);
+      const id = req.params["id"] as string;
 
       const classWithID = {
         id: id,
