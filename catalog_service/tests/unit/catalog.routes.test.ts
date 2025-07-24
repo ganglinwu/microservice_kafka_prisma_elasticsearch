@@ -1,11 +1,11 @@
 import request from "supertest";
 import express, { response } from "express";
 import { faker } from "@faker-js/faker";
-import catalogRouter, { catalogService } from "../catalog.routes";
-import { Product } from "../../models/products.model";
+import catalogRouter, { catalogService } from "../../src/api/catalog.routes";
+import { Product } from "../../src/models/products.model";
 
 // Mock the CatalogService
-jest.mock("../../services/catalog.services");
+jest.mock("../../src/services/catalog.services");
 
 const app = express();
 app.use(express.json());
@@ -87,11 +87,11 @@ describe("Catalog Routes", () => {
   describe("GET /products?limit=&offset=", () => {
     test("should get all products successfully", async () => {
       const product1 = {
-        id: 1,
+        id: faker.string.uuid(),
         ...mockReq(),
       } as Product;
       const product2 = {
-        id: 2,
+        id: faker.string.uuid(),
         ...mockReq(),
       } as Product;
       const productList = [product1, product2];
@@ -147,7 +147,7 @@ describe("Catalog Routes", () => {
   describe("GET /product/${id}", () => {
     test("should get product successfully", async () => {
       const product1 = {
-        id: 1,
+        id: faker.string.uuid(),
         ...mockReq(),
       } as Product;
 
@@ -156,7 +156,7 @@ describe("Catalog Routes", () => {
         .mockImplementation(() => Promise.resolve(product1));
 
       const response = await request(app)
-        .get("/product/1")
+        .get(`/product/${product1.id}`)
         .set("Accept", "application/json");
 
       expect(response.status).toBe(200);
@@ -164,7 +164,7 @@ describe("Catalog Routes", () => {
     });
 
     test("should respond with status 400 (bad request) when id is invalid", async () => {
-      const badID = faker.number.int({ max: 0 });
+      const badID = "invalid-uuid-format";
 
       const product1 = {
         id: badID,
@@ -176,7 +176,7 @@ describe("Catalog Routes", () => {
         .set("Accept", "application/json");
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual("id must not be less than 1");
+      expect(response.body).toEqual("id must be a UUID");
     });
 
     test("should respond with status 500 (internal server error) when something goes wrong", async () => {
@@ -187,7 +187,7 @@ describe("Catalog Routes", () => {
         .mockImplementationOnce(() => Promise.reject(new Error(randomMessage)));
 
       const response = await request(app)
-        .get("/product/1")
+        .get(`/product/${faker.string.uuid()}`)
         .set("Accept", "application/json");
 
       expect(response.status).toBe(500);
@@ -200,7 +200,7 @@ describe("Catalog Routes", () => {
       const reqBody = mockReq();
 
       const updatedProduct = {
-        id: 1,
+        id: faker.string.uuid(),
         ...reqBody,
       };
 
@@ -209,8 +209,8 @@ describe("Catalog Routes", () => {
         .mockImplementationOnce(() => Promise.resolve(updatedProduct));
 
       const response = await request(app)
-        .patch("/product/1")
-        .send(reqBody)
+        .patch(`/product/${updatedProduct.id}`)
+        .send(updatedProduct)
         .set("Accept", "application/json");
 
       expect(response.status).toBe(200);
@@ -218,7 +218,7 @@ describe("Catalog Routes", () => {
     });
 
     test("should respond status 400 (bad req) when id is 0 or negative", async () => {
-      const badID = faker.number.int({ max: 0 });
+      const badID = "invalid-uuid-format";
 
       const reqBody = mockReq();
 
@@ -233,14 +233,14 @@ describe("Catalog Routes", () => {
         .set("Accept", "application/json");
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual("id must not be less than 1");
+      expect(response.body).toEqual("id must be a UUID");
     });
 
     test("should respond status 500 (int server error) when something goes wrong", async () => {
       const reqBody = mockReq();
 
       const updatedProduct = {
-        id: 1,
+        id: faker.string.uuid(),
         ...reqBody,
       };
 
@@ -253,8 +253,8 @@ describe("Catalog Routes", () => {
         );
 
       const response = await request(app)
-        .patch("/product/1")
-        .send(reqBody)
+        .patch(`/product/${updatedProduct.id}`)
+        .send(updatedProduct)
         .set("Accept", "application/json");
 
       expect(response.status).toBe(500);
@@ -264,7 +264,7 @@ describe("Catalog Routes", () => {
 
   describe("DELETE /product/${id}", () => {
     test("should delete product successfully", async () => {
-      const randomValidID = faker.number.int({ min: 1 });
+      const randomValidID = faker.string.uuid();
 
       jest
         .spyOn(catalogService, "deleteProduct")
@@ -279,7 +279,7 @@ describe("Catalog Routes", () => {
     });
 
     test("should respond with status 400 (bad request) when id is invalid", async () => {
-      const badID = faker.number.int({ max: 0 });
+      const badID = "invalid-uuid-format";
 
       const product1 = {
         id: badID,
@@ -291,7 +291,7 @@ describe("Catalog Routes", () => {
         .set("Accept", "application/json");
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual("id must not be less than 1");
+      expect(response.body).toEqual("id must be a UUID");
     });
 
     test("should respond with status 500 (internal server error) when something goes wrong", async () => {
@@ -302,7 +302,7 @@ describe("Catalog Routes", () => {
         .mockImplementationOnce(() => Promise.reject(new Error(randomMessage)));
 
       const response = await request(app)
-        .delete("/product/1")
+        .delete(`/product/${faker.string.uuid()}`)
         .set("Accept", "application/json");
 
       expect(response.status).toBe(500);

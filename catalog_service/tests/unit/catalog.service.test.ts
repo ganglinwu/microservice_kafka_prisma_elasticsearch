@@ -1,7 +1,7 @@
-import { ICatalogRepository } from "../../interface/catalogRepository.interface";
-import { Product } from "../../models/products.model";
-import { MockCatalogRepository } from "../../repository/mockCatalog.repository";
-import { CatalogService } from "../catalog.services";
+import { ICatalogRepository } from "../../src/interface/catalogRepository.interface";
+import { Product } from "../../src/models/products.model";
+import { MockCatalogRepository } from "../../src/repository/mockCatalog.repository";
+import { CatalogService } from "../../src/services/catalog.services";
 import { faker } from "@faker-js/faker";
 
 const mockProduct = () => {
@@ -29,7 +29,7 @@ describe("catalogService", () => {
       const createdProduct = await service.createProduct(reqBody);
 
       expect(createdProduct).toMatchObject({
-        id: expect.any(Number),
+        id: expect.any(String),
         name: reqBody.name,
         price: reqBody.price,
         stock: reqBody.stock,
@@ -107,7 +107,7 @@ describe("catalogService", () => {
       const insertedProduct1 = await service.createProduct(product1);
 
       const product1000 = {
-        id: 1000,
+        id: faker.string.uuid(),
         ...mockProduct(),
       };
 
@@ -252,7 +252,7 @@ describe("catalogService", () => {
       const insertedProduct3 = await service.createProduct(product3);
       const insertedProduct4 = await service.createProduct(product4);
 
-      const fetchedProduct = await service.getProduct(1);
+      const fetchedProduct = await service.getProduct(insertedProduct1.id!);
 
       expect(fetchedProduct).toMatchObject(insertedProduct1);
     });
@@ -270,7 +270,7 @@ describe("catalogService", () => {
       const insertedProduct3 = await service.createProduct(product3);
       const insertedProduct4 = await service.createProduct(product4);
 
-      await expect(service.getProduct(0)).rejects.toThrow(
+      await expect(service.getProduct("invalid-uuid")).rejects.toThrow(
         "No product with id specified",
       );
     });
@@ -290,15 +290,15 @@ describe("catalogService", () => {
       const insertedProduct3 = await service.createProduct(product3);
       const insertedProduct4 = await service.createProduct(product4);
 
-      const deletedID = await service.deleteProduct(1);
+      const deletedID = await service.deleteProduct(insertedProduct1.id!);
 
-      expect(deletedID).toEqual(1);
+      expect(deletedID).toEqual(insertedProduct1.id!);
     });
 
     test("should throw error if id not found", async () => {
       const service = new CatalogService(repo);
 
-      await expect(service.deleteProduct(1)).rejects.toThrow(
+      await expect(service.deleteProduct("invalid-uuid")).rejects.toThrow(
         "No product with id specified",
       );
     });

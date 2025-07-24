@@ -1,4 +1,12 @@
 {
+  "exclude": [
+    "**/__test__/**",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "node_modules",
+    "vitest.config.ts",
+    "drizzle.config.ts"
+  ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
