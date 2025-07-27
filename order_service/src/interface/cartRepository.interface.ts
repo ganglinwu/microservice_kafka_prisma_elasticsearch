@@ -1,10 +1,12 @@
-import { cartProduct } from "../models/cart.models.js";
+import { Cart, cartItem } from "../models/cart.models.js";
 
 interface ICartRepository {
-  createCart(products: cartProduct[]): Promise<string>;
+  createCart(): Promise<string>;
   findCartByUserID(userID: string): Promise<string>;
-  updateCartByCartID(cartID: string, products: cartProduct): Promise<{}>;
-  deleteCartByID(cartID: string): Promise<{}>;
+  getCartByUserID(userID: string): Promise<Cart | null>;
+  addItemToCart(cartID: string, cartItem: cartItem): Promise<cartItem>;
+  deleteCartByID(cartID: string): Promise<void>;
+  removeItemFromCart(cartItemID: string): Promise<void>;
 }
 
 export { ICartRepository };
