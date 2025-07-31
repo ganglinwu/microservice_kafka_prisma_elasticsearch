@@ -403,4 +403,207 @@ describe("CartService Unit Tests", () => {
       expect(cartService.isEmpty()).toBe(true);
     });
   });
+
+  describe("Edge Cases", () => {
+    test("should handle repository failures gracefully", async () => {
+      const userID = faker.string.uuid();
+      const error = new Error("Database connection failed");
+
+      vitest.mocked(mockRepository.createCart).mockRejectedValue(error);
+
+      await expect(CartService.createNewCart(userID, mockRepository))
+        .rejects.toThrowError("Database connection failed");
+    });
+
+    test("should handle repository returning invalid cart data", async () => {
+      const userID = faker.string.uuid();
+      
+      // Repository returns malformed cart object
+      const malformedCart = { 
+        cartID: null, 
+        userID: userID,
+        createdAt: "invalid-date" 
+      } as any;
+      
+      vitest.mocked(mockRepository.createCart).mockResolvedValue(malformedCart);
+
+      const cartService = await CartService.createNewCart(userID, mockRepository);
+      
+      // Service should handle malformed data gracefully
+      expect(cartService.cartID).toBeNull();
+      expect(cartService.userID).toBe(userID);
+    });
+
+    test("should handle concurrent add operations", async () => {
+      const userID = faker.string.uuid();
+      const cartID = faker.string.uuid();
+      const productID = faker.string.uuid();
+      const price = faker.commerce.price();
+
+      const mockCart = new Cart({
+        cartID: cartID,
+        userID: userID,
+        createdAt: new Date()
+      });
+
+      const mockCartItem = new CartItem({
+        productID: productID,
+        quantity: 1,
+        price: price
+      });
+
+      vitest.mocked(mockRepository.createCart).mockResolvedValue(mockCart);
+      vitest.mocked(mockRepository.findCartItemByProduct).mockResolvedValue(null);
+      vitest.mocked(mockRepository.addOrUpdateCartItem).mockResolvedValue(mockCartItem);
+
+      const cartService = await CartService.createNewCart(userID, mockRepository);
+
+      // Simulate concurrent add operations
+      const promises = Array.from({ length: 5 }, () => 
+        cartService.addItem(productID, 1, price)
+      );
+
+      const results = await Promise.all(promises);
+      
+      // All should succeed (though in real world, this might cause race conditions)
+      expect(results).toHaveLength(5);
+      expect(mockRepository.addOrUpdateCartItem).toHaveBeenCalledTimes(5);
+    });
+
+    test("should handle very large product IDs and prices", async () => {
+      const userID = faker.string.uuid();
+      const cartID = faker.string.uuid();
+      const veryLongProductID = "a".repeat(10000);
+      const veryLargePrice = "999999999999.99";
+
+      const mockCart = new Cart({
+        cartID: cartID,
+        userID: userID,
+        createdAt: new Date()
+      });
+
+      const mockCartItem = new CartItem({
+        productID: veryLongProductID,
+        quantity: 1,
+        price: veryLargePrice
+      });
+
+      vitest.mocked(mockRepository.createCart).mockResolvedValue(mockCart);
+      vitest.mocked(mockRepository.findCartItemByProduct).mockResolvedValue(null);
+      vitest.mocked(mockRepository.addOrUpdateCartItem).mockResolvedValue(mockCartItem);
+
+      const cartService = await CartService.createNewCart(userID, mockRepository);
+      const result = await cartService.addItem(veryLongProductID, 1, veryLargePrice);
+
+      expect(result.productID).toBe(veryLongProductID);
+      expect(result.price).toBe(veryLargePrice);
+    });
+
+    test("should handle operations on expired cart consistently", async () => {
+      const userID = faker.string.uuid();
+      const cartID = faker.string.uuid();
+      const productID = faker.string.uuid();
+      const cartItemID = faker.string.uuid();
+      const price = faker.commerce.price();
+
+      const expiredDate = new Date(Date.now() - (Cart.CART_EXPIRY_HOURS + 1) * 60 * 60 * 1000);
+      const expiredCart = new Cart({
+        cartID: cartID,
+        userID: userID,
+        createdAt: expiredDate
+      });
+
+      vitest.mocked(mockRepository.createCart).mockResolvedValue(expiredCart);
+
+      const cartService = await CartService.createNewCart(userID, mockRepository);
+
+      // All operations should fail with same error message
+      const expectedError = `Cart has expired (${Cart.CART_EXPIRY_HOURS} hours limit)`;
+
+      await expect(cartService.addItem(productID, 1, price)).rejects.toThrowError(expectedError);
+      await expect(cartService.removeItem(cartItemID)).rejects.toThrowError(expectedError);
+      await expect(cartService.updateItemQuantity(cartItemID, 5)).rejects.toThrowError(expectedError);
+      await expect(cartService.clearCart()).rejects.toThrowError(expectedError);
+    });
+
+    test("should handle repository method failures in sequence", async () => {
+      const userID = faker.string.uuid();
+      const cartID = faker.string.uuid();
+      const productID = faker.string.uuid();
+      const price = faker.commerce.price();
+
+      const mockCart = new Cart({
+        cartID: cartID,
+        userID: userID,
+        createdAt: new Date()
+      });
+
+      vitest.mocked(mockRepository.createCart).mockResolvedValue(mockCart);
+      vitest.mocked(mockRepository.findCartItemByProduct).mockRejectedValue(new Error("Database timeout"));
+
+      const cartService = await CartService.createNewCart(userID, mockRepository);
+
+      await expect(cartService.addItem(productID, 1, price))
+        .rejects.toThrowError("Database timeout");
+    });
+
+    test("should handle boundary quantity with existing items", async () => {
+      const userID = faker.string.uuid();
+      const cartID = faker.string.uuid();
+      const productID = faker.string.uuid();
+      const price = faker.commerce.price();
+
+      const mockCart = new Cart({
+        cartID: cartID,
+        userID: userID,
+        createdAt: new Date()
+      });
+
+      // Existing item with quantity at boundary
+      const existingItem = new CartItem({
+        productID: productID,
+        quantity: Cart.MAX_QUANTITY_PER_ITEM - 1, // 49
+        price: price
+      });
+
+      vitest.mocked(mockRepository.createCart).mockResolvedValue(mockCart);
+      vitest.mocked(mockRepository.findCartItemByProduct).mockResolvedValue(existingItem);
+
+      const cartService = await CartService.createNewCart(userID, mockRepository);
+
+      // Should succeed: 49 + 1 = 50 (exactly at limit)
+      await expect(cartService.addItem(productID, 1, price)).resolves.not.toThrow();
+
+      // Should fail: 49 + 2 = 51 (exceeds limit)
+      await expect(cartService.addItem(productID, 2, price))
+        .rejects.toThrowError(`Maximum quantity per item is ${Cart.MAX_QUANTITY_PER_ITEM}`);
+    });
+
+    test("should handle empty string inputs gracefully", async () => {
+      const userID = faker.string.uuid();
+      const cartID = faker.string.uuid();
+
+      const mockCart = new Cart({
+        cartID: cartID,
+        userID: userID,
+        createdAt: new Date()
+      });
+
+      vitest.mocked(mockRepository.createCart).mockResolvedValue(mockCart);
+
+      const cartService = await CartService.createNewCart(userID, mockRepository);
+
+      // Empty cart item ID should fail
+      await expect(cartService.removeItem(""))
+        .rejects.toThrowError("Cart item ID is required");
+
+      // Empty product ID should be handled by repository
+      vitest.mocked(mockRepository.findCartItemByProduct).mockResolvedValue(null);
+      vitest.mocked(mockRepository.addOrUpdateCartItem).mockResolvedValue(
+        new CartItem({ productID: "", quantity: 1, price: "10.00" })
+      );
+
+      await expect(cartService.addItem("", 1, "10.00")).resolves.not.toThrow();
+    });
+  });
 });

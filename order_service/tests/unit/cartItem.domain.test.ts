@@ -119,4 +119,145 @@ describe("CartItem Domain Entity Unit Tests", () => {
       expect(item.updatedAt).toBeUndefined();
     });
   });
+
+  describe("Edge Cases", () => {
+    test("should handle zero price correctly", () => {
+      const item = new CartItem({
+        productID: faker.string.uuid(),
+        quantity: 5,
+        price: "0"
+      });
+
+      expect(item.getTotalPrice()).toBe(0);
+    });
+
+    test("should handle very large prices", () => {
+      const largePrice = "999999999.99";
+      const item = new CartItem({
+        productID: faker.string.uuid(),
+        quantity: 2,
+        price: largePrice
+      });
+
+      expect(item.getTotalPrice()).toBe(1999999999.98);
+    });
+
+    test("should handle decimal precision in price calculations", () => {
+      const item = new CartItem({
+        productID: faker.string.uuid(),
+        quantity: 3,
+        price: "0.33"
+      });
+
+      // JavaScript floating point precision issues
+      expect(item.getTotalPrice()).toBeCloseTo(0.99, 2);
+    });
+
+    test("should handle invalid price strings gracefully", () => {
+      const item = new CartItem({
+        productID: faker.string.uuid(),
+        quantity: 2,
+        price: "invalid-price"
+      });
+
+      // parseFloat("invalid-price") returns NaN
+      expect(item.getTotalPrice()).toBeNaN();
+    });
+
+    test("should handle empty price string", () => {
+      const item = new CartItem({
+        productID: faker.string.uuid(),
+        quantity: 2,
+        price: ""
+      });
+
+      // parseFloat("") returns NaN
+      expect(item.getTotalPrice()).toBeNaN();
+    });
+
+    test("should handle negative prices", () => {
+      const item = new CartItem({
+        productID: faker.string.uuid(),
+        quantity: 2,
+        price: "-10.50"
+      });
+
+      expect(item.getTotalPrice()).toBe(-21); // 2 * -10.50
+    });
+
+    test("should handle very large quantities in total calculation", () => {
+      const item = new CartItem({
+        productID: faker.string.uuid(),
+        quantity: Number.MAX_SAFE_INTEGER,
+        price: "1"
+      });
+
+      expect(item.getTotalPrice()).toBe(Number.MAX_SAFE_INTEGER);
+    });
+
+    test("should handle price update with edge case values", () => {
+      const item = new CartItem({
+        productID: faker.string.uuid(),
+        quantity: 1,
+        price: "10.00"
+      });
+
+      // Update to zero price
+      item.updatePrice("0");
+      expect(item.price).toBe("0");
+      expect(item.updatedAt).toBeDefined();
+
+      // Update to negative price
+      item.updatePrice("-5.00");
+      expect(item.price).toBe("-5.00");
+
+      // Update to invalid price string
+      item.updatePrice("invalid");
+      expect(item.price).toBe("invalid");
+    });
+
+    test("should handle quantity update boundary conditions", () => {
+      const item = new CartItem({
+        productID: faker.string.uuid(),
+        quantity: 10,
+        price: "5.00"
+      });
+
+      // Update to exactly 1 (minimum valid)
+      expect(() => item.updateQuantity(1)).not.toThrow();
+      expect(item.quantity).toBe(1);
+
+      // Try to update to boundary invalid values
+      expect(() => item.updateQuantity(0)).toThrowError("Quantity must be greater than 0");
+      expect(() => item.updateQuantity(-1)).toThrowError("Quantity must be greater than 0");
+    });
+
+    test("should handle empty and special productID values", () => {
+      // Empty product ID
+      const item1 = new CartItem({
+        productID: "",
+        quantity: 1,
+        price: "10.00"
+      });
+      expect(item1.productID).toBe("");
+
+      // Very long product ID
+      const longProductID = "a".repeat(1000);
+      const item2 = new CartItem({
+        productID: longProductID,
+        quantity: 1,
+        price: "10.00"
+      });
+      expect(item2.productID).toBe(longProductID);
+
+      // Special characters in product ID
+      const specialProductID = "product-123_$%@#!";
+      const item3 = new CartItem({
+        productID: specialProductID,
+        quantity: 1,
+        price: "10.00"
+      });
+      expect(item3.productID).toBe(specialProductID);
+    });
+  });
 });

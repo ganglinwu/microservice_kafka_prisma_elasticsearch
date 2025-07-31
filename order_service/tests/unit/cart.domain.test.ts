@@ -120,4 +120,86 @@ describe("Cart Domain Entity Unit Tests", () => {
       expect(typeof Cart.MAX_QUANTITY_PER_ITEM).toBe('number');
     });
   });
+
+  describe("Edge Cases", () => {
+    test("should handle exactly 24 hours expiry boundary", () => {
+      const exactly24Hours = new Date(Date.now() - Cart.CART_EXPIRY_HOURS * 60 * 60 * 1000);
+      const cart = new Cart({
+        cartID: faker.string.uuid(),
+        userID: faker.string.uuid(),
+        createdAt: exactly24Hours
+      });
+
+      expect(cart.isExpired()).toBe(false); // Should not be expired at exactly 24 hours
+    });
+
+    test("should handle future creation dates gracefully", () => {
+      const futureDate = new Date(Date.now() + 60 * 60 * 1000); // 1 hour in future
+      const cart = new Cart({
+        cartID: faker.string.uuid(),
+        userID: faker.string.uuid(),
+        createdAt: futureDate
+      });
+
+      expect(cart.isExpired()).toBe(false); // Future cart should not be expired
+    });
+
+    test("should handle very old carts", () => {
+      const veryOldDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000); // 1 year ago
+      const cart = new Cart({
+        cartID: faker.string.uuid(),
+        userID: faker.string.uuid(),
+        createdAt: veryOldDate
+      });
+
+      expect(cart.isExpired()).toBe(true);
+    });
+
+    test("should handle boundary quantity values", () => {
+      const cart = new Cart({
+        cartID: faker.string.uuid(),
+        userID: faker.string.uuid()
+      });
+
+      // Test exactly at the boundary
+      expect(() => cart.validateQuantity(Cart.MAX_QUANTITY_PER_ITEM)).not.toThrow();
+      expect(() => cart.validateQuantity(Cart.MAX_QUANTITY_PER_ITEM + 1)).toThrow();
+      
+      // Test edge cases for canAddQuantity
+      expect(cart.canAddQuantity(Cart.MAX_QUANTITY_PER_ITEM, 0)).toBe(true);
+      expect(cart.canAddQuantity(Cart.MAX_QUANTITY_PER_ITEM - 1, 1)).toBe(true);
+      expect(cart.canAddQuantity(Cart.MAX_QUANTITY_PER_ITEM, 1)).toBe(false);
+    });
+
+    test("should handle large quantity values", () => {
+      const cart = new Cart({
+        cartID: faker.string.uuid(),
+        userID: faker.string.uuid()
+      });
+
+      const largeQuantity = Number.MAX_SAFE_INTEGER;
+      expect(() => cart.validateQuantity(largeQuantity))
+        .toThrowError(`Maximum quantity per item is ${Cart.MAX_QUANTITY_PER_ITEM}`);
+    });
+
+    test("should handle empty cart ID and user ID", () => {
+      // These should work - empty strings are valid constructor inputs
+      expect(() => new Cart({
+        cartID: "",
+        userID: ""
+      })).not.toThrow();
+    });
+
+    test("should handle cart with invalid dates in calculations", () => {
+      const invalidDate = new Date("invalid-date");
+      const cart = new Cart({
+        cartID: faker.string.uuid(),
+        userID: faker.string.uuid(),
+        createdAt: invalidDate
+      });
+
+      // Should handle invalid dates gracefully (will be NaN)
+      expect(cart.isExpired()).toBe(false); // NaN comparisons return false
+    });
+  });
 });
