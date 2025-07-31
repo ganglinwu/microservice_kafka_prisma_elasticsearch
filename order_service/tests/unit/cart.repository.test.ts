@@ -76,7 +76,7 @@ vitest.mock("../../src/config/index.js", () => ({
   },
 }));
 
-import { cartItem } from "../../src/models/cart.models.js";
+import { CartItem } from "../../src/domain/entities/CartItem.js";
 import { CartRepository } from "../../src/repository/cart.repository.js";
 import { db } from "../../src/config/index.js";
 import { cartTable } from "../../src/db/schema.js";
