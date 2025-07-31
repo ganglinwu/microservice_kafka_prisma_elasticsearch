@@ -1,4 +1,4 @@
-import { Product } from "../models/products.model";
+import { Product } from "../models/products.model.js";
 
 // Product model v1
 // public readonly name: string,

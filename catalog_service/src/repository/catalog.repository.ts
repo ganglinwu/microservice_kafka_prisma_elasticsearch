@@ -1,6 +1,6 @@
-import { PrismaClient } from "../generated/prisma";
-import { ICatalogRepository } from "../interface/catalogRepository.interface";
-import { Product } from "../models/products.model";
+import { PrismaClient } from "@prisma/client";
+import { ICatalogRepository } from "../interface/catalogRepository.interface.js";
+import { Product } from "../models/products.model.js";
 import { v7 as uuidv7 } from "uuid";
 
 export class CatalogRepository implements ICatalogRepository {

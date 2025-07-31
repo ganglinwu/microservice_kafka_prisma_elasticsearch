@@ -1,14 +1,14 @@
 import express, { Request, Response, NextFunction } from "express";
-import { CatalogService } from "../services/catalog.services";
-import { CatalogRepository } from "../repository/catalog.repository";
-import { RequestValidator } from "../utils/requestValidator";
+import { CatalogService } from "../services/catalog.services.js";
+import { CatalogRepository } from "../repository/catalog.repository.js";
+import { RequestValidator } from "../utils/requestValidator.js";
 import {
   CreateProductRequest,
   GetProductsRequest,
   GetProductID,
   PatchProductRequest,
   DeleteProductID,
-} from "../dto/product.dto";
+} from "../dto/product.dto.js";
 
 const catalogRouter = express.Router();
 

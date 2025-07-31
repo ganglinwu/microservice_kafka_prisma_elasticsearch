@@ -1,5 +1,5 @@
-import { ICatalogRepository } from "../interface/catalogRepository.interface";
-import { Product } from "../models/products.model";
+import { ICatalogRepository } from "../interface/catalogRepository.interface.js";
+import { Product } from "../models/products.model.js";
 import { v7 as uuidv7 } from "uuid";
 
 export class MockCatalogRepository implements ICatalogRepository {

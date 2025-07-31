@@ -1,5 +1,5 @@
 import express from "express";
-import catalogRouter from "./api/catalog.routes";
+import catalogRouter from "./api/catalog.routes.js";
 
 const app = express();
 

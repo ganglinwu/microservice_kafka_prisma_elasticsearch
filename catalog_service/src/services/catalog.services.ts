@@ -1,6 +1,6 @@
-import { ICatalogRepository } from "../interface/catalogRepository.interface";
-import { Product } from "../models/products.model";
-import swapOutBlankFields from "../utils/swapOutBlankFields.utils";
+import { ICatalogRepository } from "../interface/catalogRepository.interface.js";
+import { Product } from "../models/products.model.js";
+import swapOutBlankFields from "../utils/swapOutBlankFields.utils.js";
 
 export class CatalogService {
   private _repo: ICatalogRepository;

@@ -1,4 +1,4 @@
-import { Product } from "../models/products.model";
+import { Product } from "../models/products.model.js";
 
 export interface ICatalogRepository {
   create(data: Product): Promise<Product>;
