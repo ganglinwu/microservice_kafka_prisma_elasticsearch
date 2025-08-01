@@ -1,6 +1,7 @@
 import { ICatalogRepository } from "../interface/catalogRepository.interface.js";
 import { Product } from "../models/products.model.js";
 import swapOutBlankFields from "../utils/swapOutBlankFields.utils.js";
+import { loggers } from "../utils/logger.js";
 
 export class CatalogService {
   private _repo: ICatalogRepository;
@@ -10,11 +11,31 @@ export class CatalogService {
   }
 
   async createProduct(input: Product) {
-    if (input.name == "") {
-      throw new Error("Product name must not be blank");
+    const startTime = Date.now();
+    try {
+      if (input.name == "") {
+        throw new Error("Product name must not be blank");
+      }
+      
+      const data = await this._repo.create(input);
+      const duration = Date.now() - startTime;
+      
+      loggers.business('product_created', {
+        productId: data.id,
+        productName: data.name,
+        duration,
+      });
+      
+      return data;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      loggers.error(error as Error, {
+        operation: 'createProduct',
+        productName: input.name,
+        duration,
+      });
+      throw error;
     }
-    const data = await this._repo.create(input);
-    return data;
   }
 
   async updateProduct(input: Product) {
