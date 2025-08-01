@@ -15,6 +15,7 @@ export class Cart {
   
   public readonly cartID: string;
   public readonly userID: string;
+  private items: Map<string, CartItem>;
   public readonly createdAt: Date;
   public updatedAt?: Date;
 

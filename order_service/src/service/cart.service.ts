@@ -5,6 +5,7 @@
 import { Cart } from "../domain/entities/Cart.js";
 import { CartItem } from "../domain/entities/CartItem.js";
 import { CartRepository } from "../repository/cart.repository.js";
+import { loggers } from "../utils/logger.js";
 
 export class CartService {
   private cart: Cart;
@@ -16,8 +17,27 @@ export class CartService {
   }
 
   static async createNewCart(userID: string, repo: CartRepository): Promise<CartService> {
-    const cart = await repo.createCart(userID);
-    return new CartService(cart, repo);
+    const startTime = Date.now();
+    try {
+      const cart = await repo.createCart(userID);
+      const duration = Date.now() - startTime;
+      
+      loggers.business('cart_created', {
+        userID,
+        cartID: cart.cartID,
+        duration,
+      });
+      
+      return new CartService(cart, repo);
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      loggers.error(error as Error, {
+        operation: 'createNewCart',
+        userID,
+        duration,
+      });
+      throw error;
+    }
   }
 
   static async loadExistingCart(userID: string, repo: CartRepository): Promise<CartService | null> {
