@@ -3,6 +3,7 @@
     "**/__test__/**",
     "**/*.test.ts",
     "**/*.spec.ts",
+    "tests/**/*",
     "node_modules",
     "vitest.config.ts",
     "drizzle.config.ts"
