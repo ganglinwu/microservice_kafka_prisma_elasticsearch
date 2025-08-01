@@ -1,6 +1,8 @@
 # Database data
 db/db-data/
 db/db_data/
+db/
+*/db-data/
 
 # Node modules for all services
 */node_modules/
