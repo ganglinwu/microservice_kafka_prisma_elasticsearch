@@ -1,5 +1,5 @@
-import expressApp from "./expressApp.js";
-import { logger } from "./utils/logger.js";
+import expressApp from "./expressApp";
+import { logger } from "./utils/logger";
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 

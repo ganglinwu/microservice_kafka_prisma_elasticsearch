@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
-import catalogRouter from "./api/catalog.routes.js";
-import { loggerStream, logger } from "./utils/logger.js";
+import catalogRouter from "./api/catalog.routes";
+import { loggerStream, logger } from "./utils/logger";
 
 const app = express();
 
