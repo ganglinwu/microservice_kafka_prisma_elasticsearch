@@ -10,41 +10,61 @@ import {
   DeleteProductID,
   SearchProductsRequest,
 } from "../dto/product.dto";
+import redis from "../utils/redis";
+import CacheInvalidator from "../utils/cacheInvalidator";
 
 const catalogRouter = express.Router();
 
-export const catalogService = new CatalogService(new CatalogRepository());
+export const catalogService = new CatalogService(
+  new CatalogRepository(),
+  new CacheInvalidator(redis),
+);
 
 catalogRouter.get(
-  "/product/search",
+  "/product/cache-health",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const query = String(req.query["q"] || "");
-      const limit = Number(req.query["limit"]) || 10;
-      const offset = Number(req.query["offset"]) || 0;
-
-      const urlQueries = {
-        q: query,
-        limit: limit,
-        offset: offset,
-      };
-
-      const { errors, input } = await RequestValidator(
-        SearchProductsRequest,
-        urlQueries,
-      );
-
-      if (errors) return res.status(400).json(errors);
-
-      const data = await catalogService.searchProducts(query, limit, offset);
-
-      return res.status(200).json(data);
+      await redis.ping();
+      res.status(200).json({
+        message: "Catalog service cache is healthy",
+      });
     } catch (error) {
-      const err = error as Error;
-      return res.status(500).json(err.message);
+      res.status(503).json({
+        message: "Catalog service cache is down",
+      });
     }
   },
-);
+),
+  catalogRouter.get(
+    "/product/search",
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const query = String(req.query["q"] || "");
+        const limit = Number(req.query["limit"]) || 10;
+        const offset = Number(req.query["offset"]) || 0;
+
+        const urlQueries = {
+          q: query,
+          limit: limit,
+          offset: offset,
+        };
+
+        const { errors, input } = await RequestValidator(
+          SearchProductsRequest,
+          urlQueries,
+        );
+
+        if (errors) return res.status(400).json(errors);
+
+        const data = await catalogService.searchProducts(query, limit, offset);
+
+        return res.status(200).json(data);
+      } catch (error) {
+        const err = error as Error;
+        return res.status(500).json(err.message);
+      }
+    },
+  );
 
 //endpoints
 catalogRouter.post(
