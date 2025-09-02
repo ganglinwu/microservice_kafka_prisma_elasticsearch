@@ -1,10 +1,14 @@
 import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
+import responseTime from "response-time";
 import catalogRouter from "./api/catalog.routes";
 import { loggerStream, logger } from "./utils/logger";
 
 const app = express();
+
+// Response time middleware (adds X-Response-Time header)
+app.use(responseTime());
 
 // CORS configuration for frontend communication
 app.use(cors({
