@@ -1,18 +1,50 @@
 import express, { Request, Response, NextFunction } from "express";
-import { CatalogService } from "../services/catalog.services.js";
-import { CatalogRepository } from "../repository/catalog.repository.js";
-import { RequestValidator } from "../utils/requestValidator.js";
+import { CatalogService } from "../services/catalog.services";
+import { CatalogRepository } from "../repository/catalog.repository";
+import { RequestValidator } from "../utils/requestValidator";
 import {
   CreateProductRequest,
   GetProductsRequest,
   GetProductID,
   PatchProductRequest,
   DeleteProductID,
-} from "../dto/product.dto.js";
+  SearchProductsRequest,
+} from "../dto/product.dto";
 
 const catalogRouter = express.Router();
 
 export const catalogService = new CatalogService(new CatalogRepository());
+
+catalogRouter.get(
+  "/product/search",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query = String(req.query["q"] || "");
+      const limit = Number(req.query["limit"]) || 10;
+      const offset = Number(req.query["offset"]) || 0;
+
+      const urlQueries = {
+        q: query,
+        limit: limit,
+        offset: offset,
+      };
+
+      const { errors, input } = await RequestValidator(
+        SearchProductsRequest,
+        urlQueries,
+      );
+
+      if (errors) return res.status(400).json(errors);
+
+      const data = await catalogService.searchProducts(query, limit, offset);
+
+      return res.status(200).json(data);
+    } catch (error) {
+      const err = error as Error;
+      return res.status(500).json(err.message);
+    }
+  },
+);
 
 //endpoints
 catalogRouter.post(
