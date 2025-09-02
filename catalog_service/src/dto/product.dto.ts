@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsNumber, IsString, Min, IsUUID } from "class-validator";
+import {
+  Length,
+  IsOptional,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Min,
+  IsUUID,
+} from "class-validator";
 
 // without the assertion(!) ts will complain that the fields will potentially be undefined
 //
@@ -24,6 +32,10 @@ export class CreateProductRequest {
   @IsNumber()
   @Min(0)
   stock!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  image!: string;
 }
 
 export class GetProductsRequest {
@@ -59,8 +71,27 @@ export class PatchProductRequest {
   @IsNumber()
   @Min(0)
   stock!: number;
+
+  @IsString()
+  @IsNotEmpty()
+  image!: string;
 }
 export class DeleteProductID {
   @IsUUID()
   id!: string;
+}
+
+export class SearchProductsRequest {
+  @IsOptional()
+  @IsString()
+  @Length(0, 100)
+  q?: string;
+
+  @IsNumber()
+  @Min(0)
+  limit!: number;
+
+  @IsNumber()
+  @Min(0)
+  offset!: number;
 }

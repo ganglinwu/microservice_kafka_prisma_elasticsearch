@@ -1,4 +1,4 @@
-import { Product } from "../models/products.model.js";
+import { Product } from "../models/products.model";
 
 // Product model v1
 // public readonly title: string,
@@ -17,6 +17,7 @@ const swapOutBlankFields = (input: Product, current: Product): Product => {
     description: input.description.trim() || current.description,
     price: input.price ?? current.price,
     stock: input.stock ?? current.stock,
+    image: input.image.trim() || current.image,
   };
 
   return data;
