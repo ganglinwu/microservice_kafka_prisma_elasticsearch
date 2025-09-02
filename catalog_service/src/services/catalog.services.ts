@@ -1,7 +1,7 @@
-import { ICatalogRepository } from "../interface/catalogRepository.interface.js";
-import { Product } from "../models/products.model.js";
-import swapOutBlankFields from "../utils/swapOutBlankFields.utils.js";
-import { loggers } from "../utils/logger.js";
+import { ICatalogRepository } from "../interface/catalogRepository.interface";
+import { Product } from "../models/products.model";
+import swapOutBlankFields from "../utils/swapOutBlankFields.utils";
+import { loggers } from "../utils/logger";
 
 export class CatalogService {
   private _repo: ICatalogRepository;
@@ -61,6 +61,11 @@ export class CatalogService {
   }
   async deleteProduct(id: string) {
     const data = await this._repo.delete(id);
+    return data;
+  }
+
+  async searchProducts(query: string, limit: number = 10, offset: number = 0) {
+    const data = await this._repo.searchProducts(query, limit, offset);
     return data;
   }
 }

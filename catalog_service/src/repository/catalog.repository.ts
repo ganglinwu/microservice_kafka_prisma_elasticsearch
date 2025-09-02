@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { ICatalogRepository } from "../interface/catalogRepository.interface.js";
-import { Product } from "../models/products.model.js";
+import { ICatalogRepository } from "../interface/catalogRepository.interface";
+import { Product } from "../models/products.model";
 import { v7 as uuidv7 } from "uuid";
 
 export class CatalogRepository implements ICatalogRepository {
@@ -57,5 +57,35 @@ export class CatalogRepository implements ICatalogRepository {
     } else {
       throw new Error(`product with specified id ${id} not found`);
     }
+  }
+
+  async searchProducts(query: string, limit: number, offset: number) {
+    if (!query || query.trim() == "") {
+      return await this._prisma.product.findMany({
+        take: limit,
+        skip: offset,
+      });
+    }
+
+    return await this._prisma.product.findMany({
+      where: {
+        OR: [
+          {
+            title: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+          {
+            description: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      take: limit,
+      skip: offset,
+    });
   }
 }

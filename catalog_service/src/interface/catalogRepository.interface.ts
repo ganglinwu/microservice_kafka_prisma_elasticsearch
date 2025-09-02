@@ -1,4 +1,4 @@
-import { Product } from "../models/products.model.js";
+import { Product } from "../models/products.model";
 
 export interface ICatalogRepository {
   create(data: Product): Promise<Product>;
@@ -6,4 +6,9 @@ export interface ICatalogRepository {
   delete(id: string): Promise<string>;
   find(limit: number, offset: number): Promise<Product[]>;
   findOne(id: string): Promise<Product>;
+  searchProducts(
+    query: string,
+    limit: number,
+    offset: number,
+  ): Promise<Product[]>;
 }
