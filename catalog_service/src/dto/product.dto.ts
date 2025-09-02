@@ -33,9 +33,9 @@ export class CreateProductRequest {
   @Min(0)
   stock!: number;
 
-  @IsString()
+  @IsString({ each: true })
   @IsNotEmpty()
-  image!: string;
+  images!: string[];
 }
 
 export class GetProductsRequest {
@@ -72,9 +72,9 @@ export class PatchProductRequest {
   @Min(0)
   stock!: number;
 
-  @IsString()
+  @IsString({ each: true })
   @IsNotEmpty()
-  image!: string;
+  images!: string[];
 }
 export class DeleteProductID {
   @IsUUID()

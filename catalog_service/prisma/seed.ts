@@ -3,7 +3,15 @@ import { v7 as uuidv7 } from 'uuid';
 
 const prisma = new PrismaClient();
 
-const techProducts = [
+type SeedProduct = {
+  title: string;
+  description: string;
+  price: number;
+  stock: number;
+  image: string;
+};
+
+const techProducts: SeedProduct[] = [
   { title: 'iPhone 15 Pro Max', description: 'Latest Apple smartphone with titanium design and advanced camera system', price: 1199.99, stock: 45, image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500' },
   { title: 'MacBook Pro 16-inch M3', description: 'Professional laptop with M3 chip for developers and creators', price: 2499.99, stock: 20, image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500' },
   { title: 'iPad Air M2', description: 'Versatile tablet perfect for work and entertainment', price: 599.99, stock: 35, image: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500' },
@@ -73,10 +81,14 @@ async function main() {
   await prisma.product.deleteMany({});
   console.log('🗑️ Cleared existing products');
 
-  // Create products with generated UUIDs
+  // Create products with generated UUIDs and convert single image to array
   const productsWithIds = techProducts.map(product => ({
     id: uuidv7(),
-    ...product
+    title: product.title,
+    description: product.description,
+    price: product.price,
+    stock: product.stock,
+    images: [product.image] // Convert single image to array
   }));
 
   await prisma.product.createMany({

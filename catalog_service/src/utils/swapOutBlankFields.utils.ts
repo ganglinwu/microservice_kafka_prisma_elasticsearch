@@ -17,7 +17,7 @@ const swapOutBlankFields = (input: Product, current: Product): Product => {
     description: input.description.trim() || current.description,
     price: input.price ?? current.price,
     stock: input.stock ?? current.stock,
-    image: input.image.trim() || current.image,
+    images: input.images.length > 0 ? input.images : current.images,
   };
 
   return data;
