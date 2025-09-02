@@ -13,20 +13,22 @@ vitest.mock("../../src/config/index.js", () => ({
     insert: vitest.fn((table) => {
       const config = getTableConfig(table);
       // Mock for cartTable
-      if (config.name === "carts") {
+      if (config.title === "carts") {
         return {
           values: vitest.fn(() => ({
-            returning: vitest.fn().mockResolvedValue([{
-              cartID: mockGeneratedCartID,
-              userID: fakeUserID,
-              createdAt: mockCreatedAt,
-              updatedAt: mockUpdatedAt
-            }]),
+            returning: vitest.fn().mockResolvedValue([
+              {
+                cartID: mockGeneratedCartID,
+                userID: fakeUserID,
+                createdAt: mockCreatedAt,
+                updatedAt: mockUpdatedAt,
+              },
+            ]),
           })),
         };
       }
       // Mock for cartItemsTable
-      if (config.name === "cart_items") {
+      if (config.title === "cart_items") {
         return {
           values: vitest.fn(() => ({
             returning: vitest.fn().mockResolvedValue([
@@ -68,12 +70,12 @@ vitest.mock("../../src/config/index.js", () => ({
     },
     delete: vitest.fn((table) => {
       const conf = getTableConfig(table);
-      if (conf.name === "carts") {
+      if (conf.title === "carts") {
         return {
           where: vitest.fn().mockResolvedValue(),
         };
       }
-      if (conf.name === "cart_items") {
+      if (conf.title === "cart_items") {
         return {
           where: vitest.fn().mockResolvedValue(),
         };
@@ -96,7 +98,7 @@ const mockCartItem1 = new CartItem(
   faker.commerce.price(),
   faker.string.uuid(),
   mockCreatedAt,
-  mockUpdatedAt
+  mockUpdatedAt,
 );
 const mockCartItem2 = new CartItem(
   faker.string.uuid(),
@@ -104,7 +106,7 @@ const mockCartItem2 = new CartItem(
   faker.commerce.price(),
   faker.string.uuid(),
   mockCreatedAt,
-  mockUpdatedAt
+  mockUpdatedAt,
 );
 
 const mockCartItems: CartItem[] = [mockCartItem1, mockCartItem2];

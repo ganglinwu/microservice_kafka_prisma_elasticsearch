@@ -9,7 +9,7 @@ export class MockCatalogRepository implements ICatalogRepository {
   }
   create(data: Product): Promise<Product> {
     for (const product of this._products) {
-      if (product.name === data.name) {
+      if (product.title === data.title) {
         throw new Error("Product already exists");
       }
     }

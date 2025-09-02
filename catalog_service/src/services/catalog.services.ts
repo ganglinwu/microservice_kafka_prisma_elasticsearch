@@ -13,25 +13,25 @@ export class CatalogService {
   async createProduct(input: Product) {
     const startTime = Date.now();
     try {
-      if (input.name == "") {
-        throw new Error("Product name must not be blank");
+      if (input.title == "") {
+        throw new Error("Product title must not be blank");
       }
-      
+
       const data = await this._repo.create(input);
       const duration = Date.now() - startTime;
-      
-      loggers.business('product_created', {
+
+      loggers.business("product_created", {
         productId: data.id,
-        productName: data.name,
+        producttitle: data.title,
         duration,
       });
-      
+
       return data;
     } catch (error) {
       const duration = Date.now() - startTime;
       loggers.error(error as Error, {
-        operation: 'createProduct',
-        productName: input.name,
+        operation: "createProduct",
+        producttitle: input.title,
         duration,
       });
       throw error;

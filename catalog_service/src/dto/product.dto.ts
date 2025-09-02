@@ -12,7 +12,7 @@ import { IsNotEmpty, IsNumber, IsString, Min, IsUUID } from "class-validator";
 export class CreateProductRequest {
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  title!: string;
 
   @IsString()
   description!: string;
@@ -47,7 +47,7 @@ export class PatchProductRequest {
 
   @IsString()
   @IsNotEmpty()
-  name!: string;
+  title!: string;
 
   @IsString()
   description!: string;

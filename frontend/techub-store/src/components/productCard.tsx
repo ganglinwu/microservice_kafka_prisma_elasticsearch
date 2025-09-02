@@ -18,7 +18,7 @@ function ProductCard({ product }: ProductCardProps) {
         <div className="text-gray-600 text-sm mb-2 line-clamp-2">
           {product.description}
         </div>
-        <div className="text-lg font-bold text-green-600">{product.price}</div>
+        <div className="text-lg font-bold text-green-600">${product.price}</div>
       </div>
     </Link>
   );

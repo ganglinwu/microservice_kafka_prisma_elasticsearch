@@ -14,7 +14,7 @@ app.use("/", catalogRouter);
 
 const mockReq = () => {
   return {
-    name: faker.commerce.productName(),
+    title: faker.commerce.producttitle(),
     description: faker.commerce.productDescription(),
     stock: faker.number.int({ min: 1 }),
     price: Number(faker.commerce.price()),
@@ -41,7 +41,7 @@ describe("Catalog Routes", () => {
       expect(response.body).toEqual(reqBody);
     });
 
-    test("should respond with status 400 (bad request) when name is blank", async () => {
+    test("should respond with status 400 (bad request) when title is blank", async () => {
       const reqBody = mockReq();
 
       /*
@@ -54,12 +54,12 @@ describe("Catalog Routes", () => {
         .post("/product")
         .send({
           ...reqBody,
-          name: "",
+          title: "",
         })
         .set("Accept", "application/json");
 
       expect(response.status).toBe(400);
-      expect(response.body).toEqual("name should not be empty");
+      expect(response.body).toEqual("title should not be empty");
     });
 
     test("should respond with status 500 (internal server error) when something goes wrong", async () => {

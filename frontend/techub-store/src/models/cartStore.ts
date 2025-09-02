@@ -87,7 +87,7 @@ export const useCartStore = create<CartStore>()(
       },
     }),
     {
-      name: "cart-storage",
+      title: "cart-storage",
       storage: createJSONStorage(() => localStorage),
     },
   ),

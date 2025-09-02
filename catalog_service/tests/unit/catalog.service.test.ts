@@ -6,7 +6,7 @@ import { faker } from "@faker-js/faker";
 
 const mockProduct = () => {
   return {
-    name: faker.commerce.productName(),
+    title: faker.commerce.productName(),
     price: Number(faker.commerce.price()),
     stock: faker.number.int(),
     description: faker.commerce.productDescription(),
@@ -30,7 +30,7 @@ describe("catalogService", () => {
 
       expect(createdProduct).toMatchObject({
         id: expect.any(String),
-        name: reqBody.name,
+        title: reqBody.title,
         price: reqBody.price,
         stock: reqBody.stock,
         description: reqBody.description,
@@ -51,20 +51,20 @@ describe("catalogService", () => {
       );
     });
 
-    test("should throw error if product has no name", async () => {
+    test("should throw error if product has no title", async () => {
       const service = new CatalogService(repo);
 
       const mockProd = mockProduct();
 
-      const mockProductWithoutName = {
-        name: "",
+      const mockProductWithouttitle = {
+        title: "",
         price: mockProd.price,
         description: mockProd.description,
         stock: mockProd.stock,
       };
       await expect(
-        service.createProduct(mockProductWithoutName),
-      ).rejects.toThrow("Product name must not be blank");
+        service.createProduct(mockProductWithouttitle),
+      ).rejects.toThrow("Product title must not be blank");
     });
   });
 
@@ -81,7 +81,7 @@ describe("catalogService", () => {
 
       const updatedProduct2: Product = {
         id: insertedProduct2.id,
-        name: "updated name",
+        title: "updated title",
         price: insertedProduct2.price,
         description: "updated description",
         stock: insertedProduct2.stock,

@@ -11,7 +11,7 @@ function CartItemRow({ item }: CartItemRowProps) {
   return (
     <div className="flex relative shadow-md rounded-lg mb-4 w-full">
       <div className="flex items-center w-full gap-4 p-4 border rounded-lg">
-        <img className="h-30 w-30 m-4" src={item.image} />
+        <img className="h-30 w-30 m-4" src={item.image} alt={item.title} />
         <div className="">
           <div>{item.title}</div>
           <div className="text-gray-700">Price: ${item.price}</div>
@@ -20,6 +20,7 @@ function CartItemRow({ item }: CartItemRowProps) {
             <button
               className="h-6 w-6 bg-gray-200 hover:bg-gray-300"
               onClick={() => updateQuantity(item.id, item.quantity + 1)}
+              aria-label="Increase quantity"
             >
               +
             </button>
@@ -27,6 +28,7 @@ function CartItemRow({ item }: CartItemRowProps) {
             <button
               className="h-6 w-6 bg-gray-200 hover:bg-gray-300"
               onClick={() => updateQuantity(item.id, item.quantity - 1)}
+              aria-label="Decrease quantity"
             >
               -
             </button>
@@ -39,6 +41,7 @@ function CartItemRow({ item }: CartItemRowProps) {
                   removeItem(item.id);
                 }
               }}
+              aria-label="Remove item"
             >
               <Trash size={20} />
             </button>
@@ -46,7 +49,7 @@ function CartItemRow({ item }: CartItemRowProps) {
         </div>
         <div className="self-end mb-2 flex-1">
           <div className="text-right">
-            Item Subtotal:{" "}
+            Item Subtotal:
             <span className="text-green-700">
               ${item.price * item.quantity}
             </span>

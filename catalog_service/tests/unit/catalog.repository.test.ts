@@ -19,7 +19,7 @@ jest.mock("../../src/generated/prisma", () => ({
 
 const mockProduct = (): Product => {
   return {
-    name: faker.commerce.productName(),
+    title: faker.commerce.productName(),
     description: faker.commerce.productDescription(),
     price: Number(faker.commerce.price()),
     stock: faker.number.int({ min: 1, max: 100 }),
