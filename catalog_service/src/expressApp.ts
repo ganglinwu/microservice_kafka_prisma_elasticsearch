@@ -1,9 +1,18 @@
 import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
+import cors from "cors";
 import catalogRouter from "./api/catalog.routes";
 import { loggerStream, logger } from "./utils/logger";
 
 const app = express();
+
+// CORS configuration for frontend communication
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'], // Vite dev server and potential frontend ports
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // HTTP request logging with Morgan
 app.use(morgan('combined', { stream: loggerStream }));
