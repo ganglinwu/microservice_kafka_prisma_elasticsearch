@@ -15,7 +15,8 @@ function App() {
       setLoading(true);
       try {
         const response = await fetch(
-          "https://api.escuelajs.co/api/v1/products?offset=0&limit=5",
+          "http://localhost:3000/product/search",
+          // "https://api.escuelajs.co/api/v1/products?offset=0&limit=5",
         );
         if (!response.ok) {
           throw new Error(

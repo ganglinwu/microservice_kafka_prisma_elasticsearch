@@ -1,6 +1,7 @@
 import type { CartItem } from "../models/cartStore";
 import { Trash } from "lucide-react";
 import { useCartStore } from "../models/cartStore";
+import { priceRounding } from "../utils/priceUtils";
 
 interface CartItemRowProps {
   item: CartItem;
@@ -51,7 +52,7 @@ function CartItemRow({ item }: CartItemRowProps) {
           <div className="text-right">
             Item Subtotal:
             <span className="text-green-700">
-              ${item.price * item.quantity}
+              ${priceRounding(item.price * item.quantity)}
             </span>
           </div>
         </div>

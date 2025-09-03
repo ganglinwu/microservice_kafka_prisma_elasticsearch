@@ -1,6 +1,7 @@
 import { useCartStore } from "../models/cartStore";
 import CartItemRow from "../components/cartItemRow";
 import { Link } from "react-router-dom";
+import { priceRounding } from "../utils/priceUtils";
 
 function CartList() {
   const { items, clearCart, getTotalPrice, getTotalItems } = useCartStore();
@@ -34,7 +35,9 @@ function CartList() {
       <div className="mt-auto bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-sm">
         <div className="text-right mb-1">
           Cart Sub-total:{" "}
-          <span className="text-gray-600">${getTotalPrice()}</span>
+          <span className="text-gray-600">
+            ${priceRounding(getTotalPrice())}
+          </span>
         </div>
         <div className="text-right mb-1">
           Tax (GST 9%):{" "}

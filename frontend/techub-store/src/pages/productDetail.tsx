@@ -15,7 +15,8 @@ function ProductDetail() {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `https://api.escuelajs.co/api/v1/products/${id}`,
+          `http://localhost:3000/product/${id}`,
+          //  `https://api.escuelajs.co/api/v1/products/${id}`,
         );
         if (!response.ok) {
           throw new Error(
