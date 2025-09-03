@@ -9,6 +9,7 @@ import {
   PatchProductRequest,
   DeleteProductID,
   SearchProductsRequest,
+  SearchSuggestionsRequest,
 } from "../dto/product.dto";
 import redis from "../utils/redis";
 import CacheInvalidator from "../utils/cacheInvalidator";
@@ -21,9 +22,6 @@ export const catalogService = new CatalogService(
   new CacheInvalidator(redis),
   elasticsearchClient,
 );
-
-// Export for server initialization
-export { elasticsearchClient };
 
 catalogRouter.get(
   "/product/cache-health",
@@ -71,7 +69,35 @@ catalogRouter.get(
     },
   );
 
-//endpoints
+catalogRouter.get(
+  "/product/suggestions",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query = String(req.query["q"] || "");
+      const limit = Number(req.query["limit"] || 5);
+
+      const urlQueries = {
+        q: query,
+        limit: limit,
+      };
+
+      const { errors, input } = await RequestValidator(
+        SearchSuggestionsRequest,
+        urlQueries,
+      );
+
+      if (errors) return res.status(400).json(errors);
+
+      const data = await catalogService.getSuggestions(query, limit);
+
+      return res.status(200).json(data);
+    } catch (error) {
+      const err = error as Error;
+      return res.status(500).json(err.message);
+    }
+  },
+);
+
 catalogRouter.post(
   "/product",
   async (req: Request, res: Response, next: NextFunction) => {

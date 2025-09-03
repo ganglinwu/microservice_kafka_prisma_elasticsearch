@@ -11,4 +11,5 @@ export interface ICatalogRepository {
     limit: number,
     offset: number,
   ): Promise<Product[]>;
+  getSuggestions(query: string, limit: number): Promise<string[]>;
 }

@@ -95,3 +95,15 @@ export class SearchProductsRequest {
   @Min(0)
   offset!: number;
 }
+
+export class SearchSuggestionsRequest {
+  @IsOptional()
+  @IsString()
+  @Length(1, 50)
+  q?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  limit?: number = 5;
+}
