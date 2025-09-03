@@ -208,4 +208,81 @@ export class CatalogService {
 
     return data;
   }
+
+  async getSuggestions(query: string, limit: number) {
+    // start stopwatch
+    const startTime = Date.now();
+
+    // generate cache key
+    const suggestionsCacheKey = `suggestions:${query}:${limit}`;
+
+    // add cache key to set
+    await redis.sadd("suggestions_keys", suggestionsCacheKey);
+
+    // try to fetch from cache
+    try {
+      const cached = await redis.get(suggestionsCacheKey);
+      // HIT!
+      if (cached) {
+        const duration = Date.now() - startTime;
+        loggers.business("suggestions_served", {
+          query,
+          limit,
+          cacheHit: true,
+          duration,
+        });
+        return JSON.parse(cached);
+      }
+    } catch (error) {
+      logger.info(error, "Suggestion cache miss");
+    }
+
+    // MISS!
+    try {
+      const esResult = await this._esClient.basicSuggestionSearch(query, limit);
+      if (esResult) {
+        try {
+          // cache suggestions with shorter TTL (60 seconds)
+          await redis.setex(suggestionsCacheKey, 60, JSON.stringify(esResult));
+        } catch (error) {
+          logger.error(error, "Failed to store suggestions in cache");
+        }
+        
+        const duration = Date.now() - startTime;
+        loggers.business("suggestions_served", {
+          query,
+          limit,
+          cacheHit: false,
+          source: "elasticsearch",
+          duration,
+        });
+        
+        return esResult;
+      }
+    } catch (error) {
+      // Skip logging - high volume operation, ES failures are expected
+      logger.debug("Elasticsearch suggestions failed, falling back to database");
+    }
+    
+    // Fallback to database
+    const suggestions = await this._repo.getSuggestions(query, limit);
+
+    try {
+      // cache suggestions with shorter TTL (60 seconds)
+      await redis.setex(suggestionsCacheKey, 60, JSON.stringify(suggestions));
+    } catch (error) {
+      logger.error(error, "Failed to store suggestions in cache");
+    }
+
+    const duration = Date.now() - startTime;
+    loggers.business("suggestions_served", {
+      query,
+      limit,
+      cacheHit: false,
+      source: "database",
+      duration,
+    });
+
+    return suggestions;
+  }
 }

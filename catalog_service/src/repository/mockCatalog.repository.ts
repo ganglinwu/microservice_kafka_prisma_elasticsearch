@@ -72,4 +72,23 @@ export class MockCatalogRepository implements ICatalogRepository {
     }
     throw new Error("No product with id specified");
   }
+
+  searchProducts(query: string, limit: number, offset: number): Promise<Product[]> {
+    const filteredProducts = this._products.filter(product => 
+      product.title.toLowerCase().includes(query.toLowerCase()) ||
+      product.description.toLowerCase().includes(query.toLowerCase())
+    );
+    const result = filteredProducts.slice(offset, offset + limit);
+    return Promise.resolve(result);
+  }
+
+  getSuggestions(query: string, limit: number): Promise<string[]> {
+    const suggestions = this._products
+      .filter(product => 
+        product.title.toLowerCase().includes(query.toLowerCase())
+      )
+      .map(product => product.title)
+      .slice(0, limit);
+    return Promise.resolve(suggestions);
+  }
 }

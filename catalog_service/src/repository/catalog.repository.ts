@@ -88,4 +88,32 @@ export class CatalogRepository implements ICatalogRepository {
       skip: offset,
     });
   }
+
+  async getSuggestions(query: string, limit: number): Promise<string[]> {
+    const suggestions = await this._prisma.product.findMany({
+      where: {
+        OR: [
+          {
+            title: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+          {
+            description: {
+              contains: query,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      select: {
+        title: true,
+      },
+      distinct: ["title"],
+      take: limit,
+    });
+    let result = suggestions.map((product) => product.title);
+    return result;
+  }
 }
