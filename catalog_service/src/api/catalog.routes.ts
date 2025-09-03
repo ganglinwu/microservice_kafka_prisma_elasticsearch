@@ -12,13 +12,18 @@ import {
 } from "../dto/product.dto";
 import redis from "../utils/redis";
 import CacheInvalidator from "../utils/cacheInvalidator";
+import { elasticsearchClient } from "../search/elasticsearch.client";
 
 const catalogRouter = express.Router();
 
 export const catalogService = new CatalogService(
   new CatalogRepository(),
   new CacheInvalidator(redis),
+  elasticsearchClient,
 );
+
+// Export for server initialization
+export { elasticsearchClient };
 
 catalogRouter.get(
   "/product/cache-health",
