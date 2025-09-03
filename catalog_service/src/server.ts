@@ -1,6 +1,6 @@
 import expressApp from "./expressApp";
 import { logger } from "./utils/logger";
-import { elasticsearchClient } from "./api/catalog.routes";
+import { elasticsearchClient } from "./search/elasticsearch.client";
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 

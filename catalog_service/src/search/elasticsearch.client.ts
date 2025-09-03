@@ -176,6 +176,31 @@ export class ElasticsearchClient {
     }
   }
 
+  async basicSuggestionSearch(
+    query: string,
+    limit: number = 5,
+  ): Promise<string[]> {
+    try {
+      const results = await this.client.search({
+        index: this.indexName,
+        query: {
+          multi_match: {
+            query: query,
+            fields: ["title^2", "description"],
+            type: "bool_prefix",
+          },
+        },
+        _source: ["title"],
+        size: limit,
+      });
+      const titles = results.hits.hits.map((hit: any) => hit._source.title);
+      return titles;
+    } catch (error) {
+      logger.error(error, "Elasticsearch suggestion search failed");
+      throw error;
+    }
+  }
+
   async initializeElasticsearch() {
     try {
       const connected = await this.client.ping();
