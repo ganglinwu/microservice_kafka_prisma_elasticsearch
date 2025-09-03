@@ -4,14 +4,21 @@ import swapOutBlankFields from "../utils/swapOutBlankFields.utils";
 import { logger, loggers } from "../utils/logger";
 import redis from "../utils/redis";
 import CacheInvalidator from "../utils/cacheInvalidator";
+import ElasticsearchClient from "../search/elasticsearch.client";
 
 export class CatalogService {
   private _repo: ICatalogRepository;
   private _cacheInvalidator: CacheInvalidator;
+  private _esClient: ElasticsearchClient;
 
-  constructor(repo: ICatalogRepository, cacheInvalidator: CacheInvalidator) {
+  constructor(
+    repo: ICatalogRepository,
+    cacheInvalidator: CacheInvalidator,
+    esClient: ElasticsearchClient,
+  ) {
     this._repo = repo;
     this._cacheInvalidator = cacheInvalidator;
+    this._esClient = esClient;
   }
 
   async createProduct(input: Product) {
@@ -29,6 +36,13 @@ export class CatalogService {
         producttitle: data.title,
         duration,
       });
+
+      // index on ES
+      try {
+        await this._esClient.indexProduct(data);
+      } catch (error) {
+        logger.info("Failed to index on Elasticsearch");
+      }
 
       // invalidate "search_keys" set of cache keys
       await this._cacheInvalidator.invalidate("search_keys");
@@ -57,6 +71,12 @@ export class CatalogService {
     const productToUpdate = swapOutBlankFields(input, currentProduct);
 
     const data = await this._repo.update(productToUpdate);
+
+    try {
+      await this._esClient.updateProduct(input.id, input);
+    } catch (error) {
+      logger.info("Failed to update product on Elasticsearch");
+    }
 
     // invalidate "search_keys" set of cache keys
     await this._cacheInvalidator.invalidate("search_keys");
@@ -122,6 +142,14 @@ export class CatalogService {
   }
   async deleteProduct(id: string) {
     const data = await this._repo.delete(id);
+
+    // delete on ES
+    try {
+      await this._esClient.deleteProduct(id);
+    } catch (error) {
+      logger.error(error, "Failed to delete on Elasticsearch");
+    }
+
     // invalidate "search_keys" set of cache keys
     await this._cacheInvalidator.invalidate("search_keys");
 
@@ -151,7 +179,22 @@ export class CatalogService {
         return JSON.parse(cached);
       }
     } catch (error) {
-      logger.info(error, "Cache miss, falling back to db");
+      logger.info(error, "Cache miss, falling back to db/Elasticsearch");
+    }
+
+    try {
+      const esResult = await this._esClient.basicSearch(query);
+      if (esResult) {
+        try {
+          // set cache with 300 sec TTL
+          await redis.setex(searchCacheKey, 300, JSON.stringify(esResult));
+        } catch (error) {
+          logger.error(error, "Failed to store Elasticsearch result in cache");
+        }
+      }
+      return esResult;
+    } catch (error) {
+      logger.info("Elasticsearch miss, falling back to db");
     }
     // MISS
     const data = await this._repo.searchProducts(query, limit, offset);
